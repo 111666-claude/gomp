@@ -60,6 +60,33 @@ bmp := gomp.NewBitmap(image.Rect(0, 0, size, size))
 imop.Draw(bmp, srcImg, bgr, blop)
 ```
 
+### Linear-light mask compositing
+Stacking a translucent light texture onto a dark backdrop while mixing the raw
+sRGB encoded values darkens the soft edges and produces a visible gray fringe.
+`LinearMask` fixes this by linearizing the colors (IEC 61966-2-1 transfer
+function), running the blend and the source-over compositing in linear light,
+and encoding the result back to sRGB.
+
+It accepts any of the existing blend modes, a single-channel mask
+(`*image.Alpha`, `*image.Alpha16`, `*image.Gray` or `*image.Gray16`) and an
+intensity factor scaling the mask coverage. The returned image has the same
+`Bounds` as the backdrop; pixels outside the mask `Bounds` are left untouched
+and a `nil` mask means full coverage.
+
+```go
+lm, err := gomp.NewLinearMask(gomp.Screen, 1.0)
+if err != nil {
+    log.Fatal(err)
+}
+mask := image.NewAlpha(srcImg.Bounds())
+// ... paint the mask ...
+out, err := lm.Draw(srcImg, backdrop, mask)
+```
+
+The method returns a sentinel error for nil/empty images, mismatched source and
+backdrop `Bounds`, non-finite intensity values and unsupported mask color
+models.
+
 ### Operators
 
 | Image compositing | Separable blending modes | Non-separable blending modes

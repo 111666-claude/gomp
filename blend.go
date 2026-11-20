@@ -45,16 +45,24 @@ type Color struct {
 	R, G, B float64
 }
 
+// blendModes lists all the blend modes supported by the library.
+var blendModes = []BlendType{
+	Normal, Darken, Lighten, Multiply,
+	Screen, Overlay, SoftLight, HardLight,
+	ColorDodge, ColorBurn, Difference, Exclusion,
+	Hue, Saturation, ColorMode, Luminosity,
+}
+
 // NewBlend intantiates a new Blend.
 func NewBlend() *Blend {
 	return &Blend{
-		Modes: []BlendType{
-			Normal, Darken, Lighten, Multiply,
-			Screen, Overlay, SoftLight, HardLight,
-			ColorDodge, ColorBurn, Difference, Exclusion,
-			Hue, Saturation, ColorMode, Luminosity,
-		},
+		Modes: append([]BlendType(nil), blendModes...),
 	}
+}
+
+// isValidBlendMode reports whether mode is one of the supported blend modes.
+func isValidBlendMode(mode BlendType) bool {
+	return contains(blendModes, mode)
 }
 
 // Set activate one of the supported blend modes.
